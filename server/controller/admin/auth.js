@@ -1,8 +1,10 @@
 const User = require('../../models/userModels')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
+const shortid=require('shortid')
 exports.signup = (req, res) => {
     User.findOne({ email: req.body.email })
-        .exec((error, user) => {
+        .exec(async(error, user) => {
             if (user) {
                 res.status(400).json({
                     message: "Admin Already Exist"
@@ -10,17 +12,20 @@ exports.signup = (req, res) => {
             }
 
             const { firstName, lastName, email, password } = req.body;
-
+           
+            const hash_password = await bcrypt.hash(password,10);
             const __user = new User({
                 firstName,
                 lastName,
                 email,
-                password,
-                userName: Math.random().toString(),
+                hash_password,
+                userName: shortid.generate(),
                 role: "admin"
 
 
             })
+
+            console.log(__user);
 
             __user.save((error, data) => {
                 if (error) {
